@@ -1,6 +1,4 @@
-CREATE DATABASE IF NOT EXISTS cab_pooling_db;
-
-USE cab_pooling_db;
+USE railway;
 
 
 -- =========================================
