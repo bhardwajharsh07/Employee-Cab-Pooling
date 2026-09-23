@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cab Route</title>
+</head>
+
+<body>
+
+    <h1>Smart Pickup Route</h1>
+
+    <h2>
+        {{ cab.cab_number }}
+    </h2>
+
+    <p>
+        Office: {{ cab.office_name }}
+    </p>
+
+    <p>
+        Shift: {{ cab.shift_name }}
+    </p>
+
+    <p>
+        Date: {{ cab.booking_date }}
+    </p>
+
+    <p>
+        Maximum Ride Time:
+        {{ cab.max_ride_minutes }} minutes
+    </p>
+
+    <hr>
+
+    <h3>Route Summary</h3>
+
+    <p>
+        Total Distance:
+        {{ result.total_distance_km }} km
+    </p>
+
+    <p>
+        Estimated Duration:
+        {{ result.total_duration_minutes }} minutes
+    </p>
+
+    <p>
+        Route Status:
+
+        {% if result.valid %}
+            VALID
+        {% else %}
+            INVALID
+        {% endif %}
+
+    </p>
+
+    <hr>
+
+    <h3>Pickup Sequence</h3>
+
+    {% if route %}
+
+        <table border="1" cellpadding="8">
+
+            <tr>
+                <th>Order</th>
+                <th>Employee</th>
+                <th>Pickup ETA</th>
+                <th>Ride Time</th>
+            </tr>
+
+            {% for employee in route %}
+
+            <tr>
+
+                <td>
+                    {{ employee.pickup_order }}
+                </td>
+
+                <td>
+                    {{ employee.name }}
+                </td>
+
+                <td>
+                    {{ employee.pickup_eta.strftime('%I:%M %p') }}
+                </td>
+
+                <td>
+                    {{
+                        "%.2f"|format(
+                            result.ride_times[
+                                employee.employee_id
+                            ]
+                        )
+                    }}
+                    min
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    {% else %}
+
+        <p>No employees found.</p>
+
+    {% endif %}
+
+
+    {% if not result.valid %}
+
+        <h3>Max-Ride-Time Violations</h3>
+
+        <ul>
+
+            {% for employee in result.invalid_employees %}
+
+                <li>
+
+                    Employee ID:
+                    {{ employee.employee_id }}
+
+                    -
+
+                    Ride Time:
+                    {{ employee.ride_minutes }}
+                    minutes
+
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+        <p>
+            This route cannot be finalized because
+            one or more employees exceed the
+            maximum allowed ride time.
+        </p>
+
+    {% endif %}
+
+
+    <br>
+
+    <a href="/pooling/view">
+        Back to Cab Pools
+    </a>
+
+</body>
+
+</html>
