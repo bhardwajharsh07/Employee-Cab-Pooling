@@ -1,67 +1,207 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Register - Cab Pooling</title>
+    <title>Register - MoveInSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
 </head>
 
 <body>
 
-    <h2>Employee Registration</h2>
+<div class="navbar">
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="brand">
+        MoveInSync
+    </div>
 
-    <form method="POST">
-
-        <label>Name:</label>
-        <input type="text" name="name" required>
-
-        <br><br>
-
-        <label>Username:</label>
-        <input type="text" name="username" required>
-
-        <br><br>
-
-        <label>Password:</label>
-        <input type="password" name="password" required>
-
-        <br><br>
-
-        <label>Phone:</label>
-        <input type="text" name="phone">
-
-        <br><br>
-
-        <label>Home Latitude:</label>
-        <input type="number"
-               name="latitude"
-               step="any"
-               required>
-
-        <br><br>
-
-        <label>Home Longitude:</label>
-        <input type="number"
-               name="longitude"
-               step="any"
-               required>
-
-        <br><br>
-
-        <button type="submit">Register</button>
-
-    </form>
-
-    <p>
-        Already registered?
+    <div>
         <a href="/login">Login</a>
-    </p>
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="form-card card">
+
+        <div class="page-header">
+            <h1>Employee Registration</h1>
+
+            <p>
+                Create your employee account to manage cab bookings.
+            </p>
+        </div>
+
+
+        {% with messages = get_flashed_messages() %}
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="flash">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <form method="POST">
+
+            <div class="form-group">
+
+                <label>Name</label>
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Username</label>
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Choose a username"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Gender</label>
+
+                <select name="gender" required>
+
+                    <option value="">
+                        Select gender
+                    </option>
+
+                    <option value="Male">
+                        Male
+                    </option>
+
+                    <option value="Female">
+                        Female
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Phone</label>
+
+                <input
+                    type="text"
+                    name="phone"
+                    placeholder="Enter phone number"
+                >
+
+            </div>
+
+
+            <div class="grid">
+
+                <div class="form-group">
+
+                    <label>Home Latitude</label>
+
+                    <input
+                        type="number"
+                        name="latitude"
+                        step="any"
+                        placeholder="e.g. 31.2510000"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Home Longitude</label>
+
+                    <input
+                        type="number"
+                        name="longitude"
+                        step="any"
+                        placeholder="e.g. 75.7010000"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                style="width: 100%;"
+            >
+                Create Account
+            </button>
+
+        </form>
+
+
+        <p style="text-align: center; margin-top: 20px;">
+
+            Already registered?
+
+            <a href="/login">
+                Login here
+            </a>
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="footer">
+    MoveInSync Employee Transportation System
+</div>
 
 </body>
+
 </html>

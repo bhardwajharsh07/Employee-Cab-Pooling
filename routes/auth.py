@@ -16,10 +16,22 @@ def register():
         password = request.form.get("password", "").strip()
         name = request.form.get("name", "").strip()
         phone = request.form.get("phone", "").strip()
+        gender = request.form.get("gender", "").strip()
         latitude = request.form.get("latitude", "").strip()
         longitude = request.form.get("longitude", "").strip()
 
-        if not username or not password or not name:
+        if not username or not password or not name or not gender:
+
+            allowed_genders = {
+                "Male",
+                "Female",
+                "Other"
+            }
+
+            if gender not in allowed_genders:
+                flash("Please select a valid gender.")
+                return redirect(url_for("auth.register"))
+            
             flash("Username, password and name are required.")
             return redirect(url_for("auth.register"))
 
@@ -62,15 +74,17 @@ def register():
                     user_id,
                     name,
                     phone,
+                    gender,
                     home_latitude,
                     home_longitude
                 )
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (
                     user_id,
                     name,
                     phone,
+                    gender,
                     latitude,
                     longitude
                 )

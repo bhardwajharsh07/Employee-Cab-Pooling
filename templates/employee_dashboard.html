@@ -1,38 +1,102 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Employee Dashboard</title>
+
+    <title>Employee Dashboard - MoveInSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
 </head>
 
 <body>
 
-    <h1>Employee Dashboard</h1>
+<div class="navbar">
 
-    <p>
-        Welcome, {{ username }}!
-    </p>
+    <div class="brand">
+        MoveInSync
+    </div>
 
+    <div>
 
-    <h3>Cab Services</h3>
+        <span>
+            {{ username }}
+        </span>
 
-    <p>
-        <a href="/booking/book">
-            Book a Cab
+        <a href="/logout">
+            Logout
         </a>
-    </p>
 
-    <p>
-        <a href="/booking/my-bookings">
-            My Bookings
-        </a>
-    </p>
+    </div>
+
+</div>
 
 
-    <br>
+<div class="container">
 
-    <a href="/logout">
-        Logout
-    </a>
+    <div class="page-header">
+
+        <h1>Employee Dashboard</h1>
+
+        <p>
+            Welcome back, {{ username }}.
+            Manage your daily transportation.
+        </p>
+
+    </div>
+
+
+    <div class="grid">
+
+        <div class="card">
+
+            <h2>Book a Cab</h2>
+
+            <p>
+                Reserve transportation for your office shift.
+            </p>
+
+            <a
+                class="btn"
+                href="/booking/book"
+            >
+                Book Cab
+            </a>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>My Bookings</h2>
+
+            <p>
+                View your active and previous bookings.
+            </p>
+
+            <a
+                class="btn btn-secondary"
+                href="/booking/my-bookings"
+            >
+                View Bookings
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="footer">
+
+    MoveInSync Employee Transportation System
+
+</div>
 
 </body>
+
 </html>

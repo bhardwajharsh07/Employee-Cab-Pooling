@@ -2,95 +2,165 @@
 <html>
 
 <head>
-    <title>Generate Cab Pools</title>
+
+    <title>Generate Cab Pools - MoveInSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
 </head>
 
 <body>
 
-    <h1>Generate Cab Pools</h1>
+<div class="navbar">
 
-    {% with messages = get_flashed_messages() %}
+    <div class="brand">
+        MoveInSync
+    </div>
 
-        {% if messages %}
+    <div>
 
-            {% for message in messages %}
+        <a href="/pooling/view">
+            Cab Pools
+        </a>
 
-                <p>{{ message }}</p>
+        <a href="/admin/dashboard">
+            Dashboard
+        </a>
 
-            {% endfor %}
+        <a href="/logout">
+            Logout
+        </a>
 
-        {% endif %}
+    </div>
 
-    {% endwith %}
-
-
-    <form method="POST">
-
-        <label>Shift:</label>
-
-        <select name="shift_id" required>
-
-            {% for shift in shifts %}
-
-                <option value="{{ shift.id }}">
-
-                    {{ shift.office_name }}
-                    -
-                    {{ shift.shift_name }}
-                    -
-                    {{ shift.start_time }}
-
-                </option>
-
-            {% endfor %}
-
-        </select>
-
-        <br><br>
+</div>
 
 
-        <label>Date:</label>
+<div class="container">
 
-        <input
-            type="date"
-            name="booking_date"
-            required
-        >
+    <div class="form-card card">
 
-        <br><br>
+        <div class="page-header">
 
+            <h1>Generate Cab Pools</h1>
 
-        <label>Cab Capacity:</label>
+            <p>
+                Group employees into efficient cab pools.
+            </p>
 
-        <select name="capacity">
-
-            <option value="4">4 Seats</option>
-
-            <option value="6">6 Seats</option>
-
-        </select>
-
-        <br><br>
+        </div>
 
 
-        <button type="submit">
-            Generate Pools
-        </button>
+        {% with messages = get_flashed_messages() %}
 
-    </form>
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="flash">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
 
 
-    <br>
+        <form method="POST">
 
-    <a href="/pooling/view">
-        View Existing Pools
-    </a>
+            <div class="form-group">
 
-    <br><br>
+                <label>Shift</label>
 
-    <a href="/admin/dashboard">
-        Admin Dashboard
-    </a>
+                <select name="shift_id" required>
+
+                    {% for shift in shifts %}
+
+                        <option value="{{ shift.id }}">
+
+                            {{ shift.office_name }}
+                            -
+                            {{ shift.shift_name }}
+                            -
+                            {{ shift.start_time }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Date</label>
+
+                <input
+                    type="date"
+                    name="booking_date"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Cab Capacity</label>
+
+                <select name="capacity">
+
+                    <option value="4">
+                        4 Seats
+                    </option>
+
+                    <option value="6">
+                        6 Seats
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                style="width: 100%;"
+            >
+                Generate Pools
+            </button>
+
+        </form>
+
+
+        <div class="actions">
+
+            <a
+                class="btn btn-secondary"
+                href="/pooling/view"
+            >
+                View Existing Pools
+            </a>
+
+            <a
+                class="btn btn-secondary"
+                href="/admin/dashboard"
+            >
+                Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 

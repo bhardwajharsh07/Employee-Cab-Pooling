@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from config import Config
 
 from routes.auth import auth_bp
@@ -23,17 +23,7 @@ app.register_blueprint(pooling_bp, url_prefix="/pooling")
 
 @app.route("/")
 def home():
-    return """
-    <h1>Employee Cab Pooling System</h1>
-
-    <p>
-        <a href="/login">Login</a>
-    </p>
-
-    <p>
-        <a href="/register">Register</a>
-    </p>
-    """
+    return render_template("home.html")
 
 
 if __name__ == "__main__":

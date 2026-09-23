@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS employees (
     user_id INT NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
+    gender VARCHAR(20) NOT NULL DEFAULT 'Male',
     home_latitude DECIMAL(10, 7) NOT NULL,
     home_longitude DECIMAL(10, 7) NOT NULL,
 

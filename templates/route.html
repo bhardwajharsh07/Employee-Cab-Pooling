@@ -3,203 +3,238 @@
 
 <head>
     <title>Cab Route</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-    <h1>Smart Pickup Route</h1>
+<div class="navbar">
 
-    <h2>
-        {{ cab.cab_number }}
-    </h2>
+    <div class="brand">MoveInSync</div>
 
-    <p>
-        Office: {{ cab.office_name }}
-    </p>
+    <div>
+        <a href="/pooling/view">Cab Pools</a>
+        <a href="/admin/dashboard">Dashboard</a>
+    </div>
 
-    <p>
-        Shift: {{ cab.shift_name }}
-    </p>
+</div>
 
-    <p>
-        Date: {{ cab.booking_date }}
-    </p>
+<div class="container">
 
-    <p>
-        Maximum Ride Time:
-        {{ cab.max_ride_minutes }} minutes
-    </p>
+    <div class="page-header">
 
-    <hr>
+        <h1>Smart Pickup Route</h1>
 
-    <h3>Route Summary</h3>
+        <p>
+            {{ cab.cab_number }}
+            · {{ cab.office_name }}
+            · {{ cab.shift_name }}
+        </p>
 
-    <p>
-        Total Distance:
-        {{ result.total_distance_km }} km
-    </p>
+    </div>
 
-    <p>
-        Estimated Duration:
-        {{ result.total_duration_minutes }} minutes
-    </p>
+    <div class="grid">
 
-    <p>
-        Route Status:
+        <div class="stat">
+            <div class="stat-label">Total Distance</div>
+            <div class="stat-value">
+                {{ "%.2f"|format(result.total_distance_km) }} km
+            </div>
+        </div>
 
-        {% if result.guard_required %}
+        <div class="stat">
+            <div class="stat-label">Estimated Duration</div>
+            <div class="stat-value">
+                {{ result.total_duration_minutes }} min
+            </div>
+        </div>
 
-            VALID WITH GUARD / ESCORT
+        <div class="stat">
+            <div class="stat-label">Max Ride Time</div>
+            <div class="stat-value">
+                {{ cab.max_ride_minutes }} min
+            </div>
+        </div>
 
-        {% elif not result.night_safe %}
+        <div class="stat">
+            <div class="stat-label">Night Safety</div>
+            <div class="stat-value">
 
-            INVALID - NIGHT SAFETY FAILED
+                {% if result.night_safe %}
+                    <span class="status-valid">SAFE</span>
+                {% elif result.guard_required %}
+                    <span style="color:#b45309;">GUARD</span>
+                {% else %}
+                    <span class="status-invalid">FAILED</span>
+                {% endif %}
 
-        {% elif result.valid %}
+            </div>
+        </div>
 
-            VALID
+    </div>
 
-        {% else %}
+    <div class="card">
 
-            INVALID
+        <div class="cab-header">
 
-        {% endif %}
+            <div>
+                <h2>Route Status</h2>
+            </div>
 
-    </p>
+            <div>
 
-    <p>
-        Night Safety:
+                {% if result.guard_required %}
 
-        {% if result.night_safe %}
+                    <span class="badge badge-warning">
+                        GUARD / ESCORT REQUIRED
+                    </span>
 
-            SAFE
+                {% elif not result.night_safe %}
 
-        {% elif result.guard_required %}
+                    <span class="badge badge-danger">
+                        NIGHT SAFETY FAILED
+                    </span>
 
-            GUARD / ESCORT REQUIRED
+                {% elif result.valid %}
 
-        {% else %}
+                    <span class="badge badge-success">
+                        VALID ROUTE
+                    </span>
 
-            SAFETY CHECK FAILED
+                {% else %}
 
-        {% endif %}
+                    <span class="badge badge-danger">
+                        INVALID ROUTE
+                    </span>
 
-    </p>
+                {% endif %}
 
-    <hr>
+            </div>
 
-    <h3>Pickup Sequence</h3>
+        </div>
 
-    {% if route %}
+        <p>
+            <strong>Date:</strong>
+            {{ cab.booking_date }}
+        </p>
 
-        <table border="1" cellpadding="8">
+    </div>
 
-            <tr>
-                <th>Order</th>
-                <th>Employee</th>
-                <th>Gender</th>
-                <th>Pickup ETA</th>
-                <th>Ride Time</th>
-                <th>Action</th>
-            </tr>
+    <div class="card">
+
+        <h2>Pickup Sequence</h2>
+
+        {% if route %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>#</th>
+                    <th>Employee</th>
+                    <th>Gender</th>
+                    <th>Pickup ETA</th>
+                    <th>Ride Time</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
 
             {% for employee in route %}
 
-            <tr>
+                <tr>
 
-                <td>
-                    {{ employee.pickup_order }}
-                </td>
+                    <td>
+                        <strong>
+                            {{ employee.pickup_order }}
+                        </strong>
+                    </td>
 
-                <td>
-                    {{ employee.name }}
-                </td>
+                    <td>
+                        {{ employee.name }}
+                    </td>
 
-                <td>
-                    {{ employee.gender }}
-                </td>
+                    <td>
+                        {{ employee.gender }}
+                    </td>
 
-                <td>
-                    {{ employee.pickup_eta.strftime('%I:%M %p') }}
-                </td>
+                    <td>
+                        {{ employee.pickup_eta.strftime('%I:%M %p') }}
+                    </td>
 
-                <td>
-                    {{
-                        "%.2f"|format(
-                            result.ride_times[
-                                employee.employee_id
-                            ]
-                        )
-                    }}
-                    min
-                </td>
+                    <td>
+                        {{
+                            "%.2f"|format(
+                                result.ride_times[
+                                    employee.employee_id
+                                ]
+                            )
+                        }}
+                        min
+                    </td>
 
-                <td>
+                    <td>
 
-                    <form
-                        method="POST"
-                        action="/pooling/cancel/{{ employee.booking_id }}"
-                    >
+                        <form
+                            method="POST"
+                            action="/pooling/cancel/{{ employee.booking_id }}"
+                        >
 
-                        <button type="submit">
-                            Cancel
-                        </button>
+                            <button
+                                type="submit"
+                                class="danger"
+                            >
+                                Cancel
+                            </button>
 
-                    </form>
+                        </form>
 
-                </td>
+                    </td>
 
-            </tr>
+                </tr>
 
             {% endfor %}
+
+            </tbody>
 
         </table>
 
-    {% else %}
+        {% else %}
 
-        <p>No employees found.</p>
+            <div class="empty">
+                No employees found.
+            </div>
 
-    {% endif %}
+        {% endif %}
 
+    </div>
 
     {% if not result.valid %}
 
-        <h3>Max-Ride-Time Violations</h3>
+        <div class="card">
 
-        <ul>
+            <h2>Max-Ride-Time Violations</h2>
 
             {% for employee in result.invalid_employees %}
 
-                <li>
+                <p class="status-invalid">
 
-                    Employee ID:
-                    {{ employee.employee_id }}
+                    Employee {{ employee.employee_id }}
+                    —
+                    {{ employee.ride_minutes }} minutes
 
-                    -
-
-                    Ride Time:
-                    {{ employee.ride_minutes }}
-                    minutes
-
-                </li>
+                </p>
 
             {% endfor %}
 
-        </ul>
-
-        <p>
-            This route cannot be finalized because
-            one or more employees exceed the
-            maximum allowed ride time.
-        </p>
+        </div>
 
     {% endif %}
 
-    <br>
-
-    <a href="/pooling/view">
-        Back to Cab Pools
-    </a>
+</div>
 
 </body>
 

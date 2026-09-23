@@ -2,38 +2,101 @@
 <html>
 
 <head>
-    <title>Admin Dashboard</title>
+
+    <title>Admin Dashboard - MoveInSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
 </head>
 
 <body>
 
-    <h1>Admin Dashboard</h1>
+<div class="navbar">
 
-    <p>
-        Welcome, {{ username }}!
-    </p>
+    <div class="brand">
+        MoveInSync
+    </div>
 
+    <div>
 
-    <h3>Cab Management</h3>
+        <span>
+            Admin: {{ username }}
+        </span>
 
-    <p>
-        <a href="/pooling/generate">
-            Generate Cab Pools
+        <a href="/logout">
+            Logout
         </a>
-    </p>
 
-    <p>
-        <a href="/pooling/view">
-            View Cab Pools
-        </a>
-    </p>
+    </div>
+
+</div>
 
 
-    <br>
+<div class="container">
 
-    <a href="/logout">
-        Logout
-    </a>
+    <div class="page-header">
+
+        <h1>Admin Dashboard</h1>
+
+        <p>
+            Manage cab pools, routes and employee transportation.
+        </p>
+
+    </div>
+
+
+    <div class="grid">
+
+        <div class="card">
+
+            <h2>Generate Cab Pools</h2>
+
+            <p>
+                Group employees based on shift,
+                location and cab capacity.
+            </p>
+
+            <a
+                class="btn"
+                href="/pooling/generate"
+            >
+                Generate Pools
+            </a>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>View Cab Pools</h2>
+
+            <p>
+                View assigned employees and generate
+                optimized pickup routes.
+            </p>
+
+            <a
+                class="btn btn-secondary"
+                href="/pooling/view"
+            >
+                View Cab Pools
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="footer">
+
+    Smart Employee Transportation Management
+
+</div>
 
 </body>
 
