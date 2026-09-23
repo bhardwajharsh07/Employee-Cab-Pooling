@@ -9,14 +9,19 @@ from flask import (
 )
 
 from database import get_db_connection
-from services.pooling import group_employees_into_cabs
-from services.routing import build_route
-from datetime import datetime, timedelta
+
+from services.pooling import (
+    group_employees_into_cabs,
+    fit_late_booking
+)
+
 from services.routing import (
     build_route,
     haversine_distance,
     travel_time_minutes
 )
+
+from datetime import datetime, timedelta
 
 
 pooling_bp = Blueprint(
@@ -213,6 +218,7 @@ def view_pools():
             ON cabs.shift_id = shifts.id
         JOIN offices
             ON shifts.office_id = offices.id
+        WHERE cabs.status = 'ACTIVE'
         ORDER BY
             cabs.booking_date DESC,
             cabs.id
@@ -479,3 +485,205 @@ def generate_route(cab_id):
         result=result,
         office=office
     )
+
+
+@pooling_bp.route("/cancel/<int:booking_id>", methods=["POST"])
+def cancel_booking(booking_id):
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+
+        # -----------------------------------------
+        # Find the cab containing this booking
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            SELECT
+                cab_members.cab_id,
+                cab_members.booking_id
+            FROM cab_members
+            JOIN bookings
+                ON cab_members.booking_id = bookings.id
+            WHERE cab_members.booking_id = %s
+              AND bookings.status = 'ACTIVE'
+            """,
+            (booking_id,)
+        )
+
+        membership = cursor.fetchone()
+
+        if not membership:
+            return "Active booking not found", 404
+
+        cab_id = membership["cab_id"]
+
+        # -----------------------------------------
+        # Mark booking as cancelled
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            UPDATE bookings
+            SET status = 'CANCELLED'
+            WHERE id = %s
+            """,
+            (booking_id,)
+        )
+
+        # -----------------------------------------
+        # Remove employee from this cab
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            DELETE FROM cab_members
+            WHERE booking_id = %s
+              AND cab_id = %s
+            """,
+            (booking_id, cab_id)
+        )
+
+        # -----------------------------------------
+        # Check whether cab is now empty
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS member_count
+            FROM cab_members
+            WHERE cab_id = %s
+            """,
+            (cab_id,)
+        )
+
+        member_count = cursor.fetchone()["member_count"]
+
+        # -----------------------------------------
+        # Cancel cab if no employees remain
+        # -----------------------------------------
+
+        if member_count == 0:
+
+            cursor.execute(
+                """
+                UPDATE cabs
+                SET status = 'CANCELLED'
+                WHERE id = %s
+                """,
+                (cab_id,)
+            )
+
+        # -----------------------------------------
+        # Save all database changes
+        # -----------------------------------------
+
+        connection.commit()
+
+        # -----------------------------------------
+        # Re-plan only the affected cab
+        # -----------------------------------------
+
+        return redirect(
+            url_for(
+                "pooling.generate_route",
+                cab_id=cab_id
+            )
+        )
+
+    except Exception as error:
+
+        connection.rollback()
+
+        return f"Cancellation failed: {error}", 500
+
+    finally:
+
+        cursor.close()
+        connection.close()
+
+
+@pooling_bp.route(
+    "/late-booking/<int:booking_id>",
+    methods=["POST"]
+)
+def late_booking(booking_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+
+    if session.get("role") != "ADMIN":
+        return redirect(url_for("auth.login"))
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+
+        # -----------------------------------------
+        # Get booking information
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            SELECT
+                bookings.id AS booking_id,
+                bookings.employee_id,
+                bookings.shift_id,
+                bookings.booking_date
+            FROM bookings
+            WHERE bookings.id = %s
+              AND bookings.status = 'ACTIVE'
+            """,
+            (booking_id,)
+        )
+
+        booking = cursor.fetchone()
+
+        if not booking:
+            flash("Active booking not found.")
+
+            return redirect(
+                url_for("pooling.view_pools")
+            )
+
+        # -----------------------------------------
+        # Try to fit booking into existing cab
+        # -----------------------------------------
+
+        result = fit_late_booking(
+            booking["booking_id"],
+            booking["employee_id"],
+            booking["shift_id"],
+            booking["booking_date"]
+        )
+
+        if not result["success"]:
+
+            flash(
+                "No suitable cab found for this late booking."
+            )
+
+            return redirect(
+                url_for("pooling.view_pools")
+            )
+
+        cab_id = result["cab_id"]
+
+        # -----------------------------------------
+        # Recalculate the affected cab route
+        # -----------------------------------------
+
+        return redirect(
+            url_for(
+                "pooling.generate_route",
+                cab_id=cab_id
+            )
+        )
+
+    finally:
+
+        cursor.close()
+        connection.close()

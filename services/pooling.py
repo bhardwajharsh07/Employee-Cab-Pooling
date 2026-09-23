@@ -1,5 +1,9 @@
 import math
-
+from services.routing import (
+    build_route,
+    haversine_distance
+)
+from database import get_db_connection
 
 DEFAULT_GRID_SIZE = 0.01
 
@@ -40,55 +44,6 @@ def get_nearby_cells(cell):
             )
 
     return nearby_cells
-
-
-def haversine_distance(
-    latitude1,
-    longitude1,
-    latitude2,
-    longitude2
-):
-    """
-    Calculate straight-line distance between
-    two geographical coordinates.
-
-    Returns distance in kilometers.
-    """
-
-    latitude1 = float(latitude1)
-    longitude1 = float(longitude1)
-    latitude2 = float(latitude2)
-    longitude2 = float(longitude2)
-
-    earth_radius = 6371.0
-
-    lat1 = math.radians(latitude1)
-    lat2 = math.radians(latitude2)
-
-    delta_lat = math.radians(
-        latitude2 - latitude1
-    )
-
-    delta_lon = math.radians(
-        longitude2 - longitude1
-    )
-
-    a = (
-        math.sin(delta_lat / 2) ** 2
-        +
-        math.cos(lat1)
-        *
-        math.cos(lat2)
-        *
-        math.sin(delta_lon / 2) ** 2
-    )
-
-    c = 2 * math.atan2(
-        math.sqrt(a),
-        math.sqrt(1 - a)
-    )
-
-    return earth_radius * c
 
 
 def group_employees_into_cabs(
@@ -227,3 +182,217 @@ def group_employees_into_cabs(
         cabs.append(cab_members)
 
     return cabs
+
+
+def fit_late_booking(
+    booking_id,
+    employee_id,
+    shift_id,
+    booking_date
+):
+    """
+    Try to fit a late booking into an existing active cab.
+
+    The booking is placed only if:
+    - the cab belongs to the same shift
+    - the cab is on the same date
+    - the cab has free capacity
+    - the resulting route is valid
+    """
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT cab_id
+            FROM cab_members
+            WHERE booking_id = %s
+            """,
+            (booking_id,)
+        )
+
+        existing_membership = cursor.fetchone()
+
+        if existing_membership:
+            return {
+                "success": True,
+                "cab_id": existing_membership["cab_id"]
+            }
+
+        # -----------------------------------------
+        # Get the late employee
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            SELECT
+                id AS employee_id,
+                name,
+                gender,
+                home_latitude AS latitude,
+                home_longitude AS longitude
+            FROM employees
+            WHERE id = %s
+            """,
+            (employee_id,)
+        )
+
+        new_employee = cursor.fetchone()
+
+        if not new_employee:
+
+            return {
+                "success": False,
+                "cab_id": None
+            }
+
+        # -----------------------------------------
+        # Find active cabs for same shift/date
+        # -----------------------------------------
+
+        cursor.execute(
+            """
+            SELECT
+                cabs.id AS cab_id,
+                cabs.capacity,
+                shifts.max_ride_minutes,
+                shifts.start_time,
+                offices.latitude AS office_latitude,
+                offices.longitude AS office_longitude
+            FROM cabs
+            JOIN shifts
+                ON cabs.shift_id = shifts.id
+            JOIN offices
+                ON shifts.office_id = offices.id
+            WHERE cabs.shift_id = %s
+              AND cabs.booking_date = %s
+              AND cabs.status = 'ACTIVE'
+            ORDER BY cabs.id
+            """,
+            (
+                shift_id,
+                booking_date
+            )
+        )
+
+        cabs = cursor.fetchall()
+
+        # -----------------------------------------
+        # Try each existing cab
+        # -----------------------------------------
+
+        for cab in cabs:
+
+            cab_id = cab["cab_id"]
+            capacity = cab["capacity"]
+
+            # -------------------------------------
+            # Get current members
+            # -------------------------------------
+
+            cursor.execute(
+                """
+                SELECT
+                    bookings.id AS booking_id,
+                    employees.id AS employee_id,
+                    employees.name,
+                    employees.gender,
+                    employees.home_latitude AS latitude,
+                    employees.home_longitude AS longitude
+                FROM cab_members
+                JOIN bookings
+                    ON cab_members.booking_id = bookings.id
+                JOIN employees
+                    ON bookings.employee_id = employees.id
+                WHERE cab_members.cab_id = %s
+                  AND bookings.status = 'ACTIVE'
+                ORDER BY cab_members.id
+                """,
+                (cab_id,)
+            )
+
+            employees = cursor.fetchall()
+
+            # -------------------------------------
+            # Check capacity
+            # -------------------------------------
+
+            if len(employees) >= capacity:
+                continue
+
+            # -------------------------------------
+            # Temporarily include late employee
+            # -------------------------------------
+
+            test_employees = employees + [
+                {
+                    **new_employee,
+                    "booking_id": booking_id
+                }
+            ]
+
+            office = {
+                "latitude": cab["office_latitude"],
+                "longitude": cab["office_longitude"]
+            }
+
+            # -------------------------------------
+            # Test complete route
+            # -------------------------------------
+
+            result = build_route(
+                test_employees,
+                office,
+                cab["max_ride_minutes"],
+                cab["start_time"]
+            )
+
+            # -------------------------------------
+            # Add booking if route is valid
+            # -------------------------------------
+
+            if result["valid"]:
+
+                cursor.execute(
+                    """
+                    INSERT INTO cab_members
+                    (
+                        cab_id,
+                        booking_id
+                    )
+                    VALUES (%s, %s)
+                    """,
+                    (
+                        cab_id,
+                        booking_id
+                    )
+                )
+
+                connection.commit()
+
+                return {
+                    "success": True,
+                    "cab_id": cab_id
+                }
+
+        # -----------------------------------------
+        # No suitable cab found
+        # -----------------------------------------
+
+        return {
+            "success": False,
+            "cab_id": None
+        }
+
+    except Exception:
+
+        connection.rollback()
+        raise
+
+    finally:
+
+        cursor.close()
+        connection.close()

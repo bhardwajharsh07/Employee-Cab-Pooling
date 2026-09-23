@@ -100,6 +100,7 @@
                 <th>Gender</th>
                 <th>Pickup ETA</th>
                 <th>Ride Time</th>
+                <th>Action</th>
             </tr>
 
             {% for employee in route %}
@@ -131,6 +132,21 @@
                         )
                     }}
                     min
+                </td>
+
+                <td>
+
+                    <form
+                        method="POST"
+                        action="/pooling/cancel/{{ employee.booking_id }}"
+                    >
+
+                        <button type="submit">
+                            Cancel
+                        </button>
+
+                    </form>
+
                 </td>
 
             </tr>
@@ -178,7 +194,6 @@
         </p>
 
     {% endif %}
-
 
     <br>
 

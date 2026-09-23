@@ -137,5 +137,28 @@ class TestRouting(unittest.TestCase):
         )
 
 
+def test_route_rejects_max_ride_violation(self):
+
+    far_office = {
+        "latitude": 31.5000,
+        "longitude": 76.0000
+    }
+
+    result = build_route(
+        self.employees,
+        far_office,
+        1
+    )
+
+    self.assertFalse(
+        result["valid"]
+    )
+
+    self.assertGreater(
+        len(result["invalid_employees"]),
+        0
+    )
+
+
 if __name__ == "__main__":
     unittest.main()
