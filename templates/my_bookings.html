@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Bookings</title>
+</head>
+
+<body>
+
+    <h1>My Cab Bookings</h1>
+
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <p>{{ message }}</p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    {% if bookings %}
+
+        <table border="1" cellpadding="8">
+
+            <tr>
+                <th>Office</th>
+                <th>Shift</th>
+                <th>Time</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+
+            {% for booking in bookings %}
+
+            <tr>
+
+                <td>
+                    {{ booking.office_name }}
+                </td>
+
+                <td>
+                    {{ booking.shift_name }}
+                </td>
+
+                <td>
+                    {{ booking.start_time }}
+                </td>
+
+                <td>
+                    {{ booking.booking_date }}
+                </td>
+
+                <td>
+                    {{ booking.status }}
+                </td>
+
+                <td>
+
+                    {% if booking.status == 'ACTIVE' %}
+
+                    <form
+                        method="POST"
+                        action="/booking/cancel/{{ booking.id }}"
+                    >
+
+                        <button type="submit">
+                            Cancel
+                        </button>
+
+                    </form>
+
+                    {% else %}
+
+                        No action
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    {% else %}
+
+        <p>
+            You don't have any bookings.
+        </p>
+
+    {% endif %}
+
+
+    <br>
+
+    <a href="/booking/book">
+        Book Another Cab
+    </a>
+
+    <br><br>
+
+    <a href="/employee/dashboard">
+        Dashboard
+    </a>
+
+</body>
+</html>
