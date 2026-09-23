@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Cab Pooling</title>
+</head>
+
+<body>
+
+    <h2>Employee Registration</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>Name:</label>
+        <input type="text" name="name" required>
+
+        <br><br>
+
+        <label>Username:</label>
+        <input type="text" name="username" required>
+
+        <br><br>
+
+        <label>Password:</label>
+        <input type="password" name="password" required>
+
+        <br><br>
+
+        <label>Phone:</label>
+        <input type="text" name="phone">
+
+        <br><br>
+
+        <label>Home Latitude:</label>
+        <input type="number"
+               name="latitude"
+               step="any"
+               required>
+
+        <br><br>
+
+        <label>Home Longitude:</label>
+        <input type="number"
+               name="longitude"
+               step="any"
+               required>
+
+        <br><br>
+
+        <button type="submit">Register</button>
+
+    </form>
+
+    <p>
+        Already registered?
+        <a href="/login">Login</a>
+    </p>
+
+</body>
+</html>

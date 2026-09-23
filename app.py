@@ -1,31 +1,35 @@
 from flask import Flask
-from database import get_db_connection
+from config import Config
+
+from routes.auth import auth_bp
+from routes.employee import employee_bp
+from routes.admin import admin_bp
+
 
 app = Flask(__name__)
+
+app.config.from_object(Config)
+
+
+# Register routes
+app.register_blueprint(auth_bp)
+app.register_blueprint(employee_bp, url_prefix="/employee")
+app.register_blueprint(admin_bp, url_prefix="/admin")
 
 
 @app.route("/")
 def home():
-    return "Employee Cab Pooling System is running!"
+    return """
+    <h1>Employee Cab Pooling System</h1>
 
+    <p>
+        <a href="/login">Login</a>
+    </p>
 
-@app.route("/test-db")
-def test_db():
-    try:
-        connection = get_db_connection()
-
-        cursor = connection.cursor()
-        cursor.execute("SELECT DATABASE()")
-
-        result = cursor.fetchone()
-
-        cursor.close()
-        connection.close()
-
-        return f"Database connected successfully: {result[0]}"
-
-    except Exception as error:
-        return f"Database connection failed: {error}", 500
+    <p>
+        <a href="/register">Register</a>
+    </p>
+    """
 
 
 if __name__ == "__main__":
