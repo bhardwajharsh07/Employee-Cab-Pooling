@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Admin Dashboard</title>
 </head>
@@ -8,13 +9,32 @@
 
     <h1>Admin Dashboard</h1>
 
-    <p>Welcome, {{ username }}!</p>
-
     <p>
-        You are logged in as an administrator.
+        Welcome, {{ username }}!
     </p>
 
-    <a href="/logout">Logout</a>
+
+    <h3>Cab Management</h3>
+
+    <p>
+        <a href="/pooling/generate">
+            Generate Cab Pools
+        </a>
+    </p>
+
+    <p>
+        <a href="/pooling/view">
+            View Cab Pools
+        </a>
+    </p>
+
+
+    <br>
+
+    <a href="/logout">
+        Logout
+    </a>
 
 </body>
+
 </html>

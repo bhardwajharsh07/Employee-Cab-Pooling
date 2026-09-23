@@ -5,6 +5,7 @@ from routes.auth import auth_bp
 from routes.employee import employee_bp
 from routes.admin import admin_bp
 from routes.booking import booking_bp
+from routes.pooling import pooling_bp
 
 
 app = Flask(__name__)
@@ -17,6 +18,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(employee_bp, url_prefix="/employee")
 app.register_blueprint(admin_bp, url_prefix="/admin")
 app.register_blueprint(booking_bp, url_prefix="/booking")
+app.register_blueprint(pooling_bp, url_prefix="/pooling")
 
 
 @app.route("/")

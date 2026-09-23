@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cab Pools</title>
+</head>
+
+<body>
+
+    <h1>Cab Pools</h1>
+
+
+    {% if cabs %}
+
+        {% for cab in cabs %}
+
+            <hr>
+
+            <h2>
+                {{ cab.cab_number }}
+            </h2>
+
+            <p>
+                Office: {{ cab.office_name }}
+            </p>
+
+            <p>
+                Shift: {{ cab.shift_name }}
+            </p>
+
+            <p>
+                Date: {{ cab.booking_date }}
+            </p>
+
+            <p>
+                Capacity: {{ cab.capacity }}
+            </p>
+
+
+            <h3>Employees</h3>
+
+            <ul>
+
+                {% for member in cab.members %}
+
+                    <li>
+
+                        {{ member.name }}
+
+                        (
+                        {{ member.home_latitude }},
+                        {{ member.home_longitude }}
+                        )
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No cab pools have been generated.</p>
+
+    {% endif %}
+
+
+    <br>
+
+    <a href="/pooling/generate">
+        Generate New Pools
+    </a>
+
+    <br><br>
+
+    <a href="/admin/dashboard">
+        Admin Dashboard
+    </a>
+
+</body>
+
+</html>

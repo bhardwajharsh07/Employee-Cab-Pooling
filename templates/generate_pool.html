@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Generate Cab Pools</title>
+</head>
+
+<body>
+
+    <h1>Generate Cab Pools</h1>
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <p>{{ message }}</p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <form method="POST">
+
+        <label>Shift:</label>
+
+        <select name="shift_id" required>
+
+            {% for shift in shifts %}
+
+                <option value="{{ shift.id }}">
+
+                    {{ shift.office_name }}
+                    -
+                    {{ shift.shift_name }}
+                    -
+                    {{ shift.start_time }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+        <br><br>
+
+
+        <label>Date:</label>
+
+        <input
+            type="date"
+            name="booking_date"
+            required
+        >
+
+        <br><br>
+
+
+        <label>Cab Capacity:</label>
+
+        <select name="capacity">
+
+            <option value="4">4 Seats</option>
+
+            <option value="6">6 Seats</option>
+
+        </select>
+
+        <br><br>
+
+
+        <button type="submit">
+            Generate Pools
+        </button>
+
+    </form>
+
+
+    <br>
+
+    <a href="/pooling/view">
+        View Existing Pools
+    </a>
+
+    <br><br>
+
+    <a href="/admin/dashboard">
+        Admin Dashboard
+    </a>
+
+</body>
+
+</html>
