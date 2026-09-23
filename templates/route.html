@@ -47,10 +47,41 @@
     <p>
         Route Status:
 
-        {% if result.valid %}
+        {% if result.guard_required %}
+
+            VALID WITH GUARD / ESCORT
+
+        {% elif not result.night_safe %}
+
+            INVALID - NIGHT SAFETY FAILED
+
+        {% elif result.valid %}
+
             VALID
+
         {% else %}
+
             INVALID
+
+        {% endif %}
+
+    </p>
+
+    <p>
+        Night Safety:
+
+        {% if result.night_safe %}
+
+            SAFE
+
+        {% elif result.guard_required %}
+
+            GUARD / ESCORT REQUIRED
+
+        {% else %}
+
+            SAFETY CHECK FAILED
+
         {% endif %}
 
     </p>
@@ -66,6 +97,7 @@
             <tr>
                 <th>Order</th>
                 <th>Employee</th>
+                <th>Gender</th>
                 <th>Pickup ETA</th>
                 <th>Ride Time</th>
             </tr>
@@ -80,6 +112,10 @@
 
                 <td>
                     {{ employee.name }}
+                </td>
+
+                <td>
+                    {{ employee.gender }}
                 </td>
 
                 <td>

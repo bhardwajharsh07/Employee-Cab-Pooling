@@ -75,11 +75,12 @@ def generate():
     cursor.execute(
         """
         SELECT
-            bookings.id AS booking_id,
-            employees.id AS employee_id,
-            employees.name,
-            employees.home_latitude AS latitude,
-            employees.home_longitude AS longitude
+        bookings.id AS booking_id,
+        employees.id AS employee_id,
+        employees.name,
+        employees.gender,
+        employees.home_latitude AS latitude,
+        employees.home_longitude AS longitude
         FROM bookings
         JOIN employees
             ON bookings.employee_id = employees.id
@@ -129,7 +130,9 @@ def generate():
     for index, cab_members in enumerate(cabs):
 
         cab_number = (
-            f"CAB-{booking_date}-{index + 1}"
+            f"CAB-{booking_date}-"
+            f"SHIFT-{shift_id}-"
+            f"{index + 1}"
         )
 
         cursor.execute(
@@ -314,6 +317,7 @@ def generate_route(cab_id):
             bookings.id AS booking_id,
             employees.id AS employee_id,
             employees.name,
+            employees.gender,
             employees.home_latitude AS latitude,
             employees.home_longitude AS longitude
         FROM cab_members
@@ -340,7 +344,8 @@ def generate_route(cab_id):
     result = build_route(
         employees,
         office,
-        cab["max_ride_minutes"]
+        cab["max_ride_minutes"],
+        cab["start_time"]
     )
 
     # -----------------------------------------

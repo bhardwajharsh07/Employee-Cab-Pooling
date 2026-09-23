@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
-
+from itertools import permutations
 from services.pooling import haversine_distance
 
 
 AVERAGE_SPEED_KMPH = 30
-
+NIGHT_START_HOUR = 22
+NIGHT_END_HOUR = 6
 
 def travel_time_minutes(distance_km):
     """
@@ -200,7 +201,8 @@ def nearest_neighbour_route(
 def build_route(
     employees,
     office,
-    max_ride_minutes
+    max_ride_minutes,
+    shift_time=None
 ):
     """
     Build and validate a pickup route.
@@ -222,6 +224,19 @@ def build_route(
         employees,
         office
     )
+
+    safety_result = {
+        "safe": True,
+        "guard_required": False
+    }
+
+    if shift_time is not None:
+
+        if is_night_time(shift_time):
+
+            route, safety_result = (
+                fix_night_safety(route)
+            )
 
     # Calculate total distance
     total_distance = calculate_route_distance(
@@ -251,9 +266,125 @@ def build_route(
             total_duration,
             2
         ),
-        "valid": validation["valid"],
+        "valid": (
+            validation["valid"]
+            and safety_result["safe"]
+        ),
         "ride_times": validation["ride_times"],
         "invalid_employees": validation[
             "invalid_employees"
+        ],
+        "night_safe": safety_result["safe"],
+        "guard_required": safety_result[
+            "guard_required"
         ]
+    }
+
+
+def is_night_time(shift_time):
+    """
+    Return True if the shift starts during
+    configured night hours.
+
+    MySQL TIME may be returned as either
+    datetime.time or datetime.timedelta.
+    """
+
+    if isinstance(shift_time, timedelta):
+
+        total_seconds = shift_time.total_seconds()
+
+        hour = int(total_seconds // 3600) % 24
+
+    else:
+
+        hour = shift_time.hour
+
+    return (
+        hour >= NIGHT_START_HOUR
+        or hour < NIGHT_END_HOUR
+    )
+
+
+def violates_night_safety(route):
+    """
+    Check whether a night route violates
+    the women-safety rule.
+
+    If there is only one female employee,
+    she must not be the first pickup or
+    last drop.
+    """
+
+    if not route:
+        return False
+
+    female_employees = [
+        employee
+        for employee in route
+        if str(employee.get("gender", "")).strip().lower()
+        == "female"
+    ]
+
+    # No female employee -> safe
+    if len(female_employees) == 0:
+        return False
+
+    # With multiple female employees, the
+    # current prototype does not consider
+    # the route unsafe.
+    if len(female_employees) > 1:
+        return False
+
+    female_id = female_employees[0]["employee_id"]
+
+    # Only one female employee:
+    # she cannot be first or last.
+    if route[0]["employee_id"] == female_id:
+        return True
+
+    if route[-1]["employee_id"] == female_id:
+        return True
+
+    return False
+
+
+def fix_night_safety(route):
+    """
+    Try to find a safe ordering for a night route.
+
+    Cab capacity is limited to 4 or 6, so checking
+    all permutations is practical for this prototype.
+    """
+
+    if not route:
+        return route, {
+            "safe": True,
+            "guard_required": False
+        }
+
+    # Check current route first.
+    if not violates_night_safety(route):
+
+        return route, {
+            "safe": True,
+            "guard_required": False
+        }
+
+    # Try every possible ordering.
+    for candidate in permutations(route):
+
+        candidate = list(candidate)
+
+        if not violates_night_safety(candidate):
+
+            return candidate, {
+                "safe": True,
+                "guard_required": False
+            }
+
+    # No safe ordering exists.
+    return route, {
+        "safe": False,
+        "guard_required": True
     }
