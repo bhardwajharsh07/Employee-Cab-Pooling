@@ -1,4 +1,4 @@
-USE cab_pooling_db;
+USE railway;
 
 -- =========================================================
 -- DEMO DATA FOR EMPLOYEE CAB POOLING SYSTEM
