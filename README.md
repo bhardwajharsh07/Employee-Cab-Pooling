@@ -2,7 +2,7 @@
 
 A Flask + MySQL based employee transportation system that groups employees into shared cabs and generates smart pickup routes while respecting **cab capacity, maximum ride time, and night safety constraints**.
 
-Live Demo: [Clickable Text](https://employee-cab-pooling.up.railway.app/)
+Live Demo: [Employee Cab Pooling](https://employee-cab-pooling.up.railway.app/)
 
 ## ✨ Features
 
